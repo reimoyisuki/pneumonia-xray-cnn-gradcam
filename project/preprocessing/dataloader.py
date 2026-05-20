@@ -7,11 +7,11 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-# Import class dan transforms dari file modular kita sendiri
+# Import class
 from preprocessing.dataset import ChestXrayDataset
 from preprocessing.preprocessing import train_transforms, test_val_transforms
 
-# LOAD PATHS & CEK CLASS DISTRIBUTION
+# LOAD PATHS DAN CEK CLASS DISTRIBUTION
 dataset_dir = '/content/dataset/chest_xray'
 
 # Mengumpulkan semua path gambar
@@ -37,7 +37,7 @@ plt.title('Distribusi Kelas Dataset Chest X-Ray')
 plt.show()
 
 # SPLIT DATASET
-# Split pertama: Pisahkan Train (70%) dan Temp (30% untuk Val & Test)
+# Split pertama: Train (70%) dan Temp (30% untuk Val & Test)
 train_df, temp_df = train_test_split(df, test_size=0.3, stratify=df['label'], random_state=42)
 
 # Split kedua: Bagi Temp menjadi Val (15%) dan Test (15%)
@@ -73,7 +73,7 @@ def imshow(inp, title=None):
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
     inp = std * inp + mean
-    inp = np.clip(inp, 0, 1) # Pastikan rentang nilai valid
+    inp = np.clip(inp, 0, 1)
     plt.imshow(inp)
     if title is not None:
         plt.title(title)

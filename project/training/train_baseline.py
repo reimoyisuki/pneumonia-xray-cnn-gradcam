@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
 
-# Ini penting: Manggil arsitektur dari file baseline_model.py yang ada di folder models
+# Import arsitektur dari file baseline_model.py
 from models.baseline_model import BaselineCNN
 
 def train_model(model, train_loader, val_loader, epochs=5, learning_rate=0.001):
