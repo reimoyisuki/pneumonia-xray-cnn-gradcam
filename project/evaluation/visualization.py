@@ -12,7 +12,7 @@ from sklearn.metrics import roc_curve, auc
 import torch
 
 # ------------------------------------------------------------------
-# Global theme - consistent across all plots
+# Global theme — consistent across all plots
 # ------------------------------------------------------------------
 
 PALETTE = {
@@ -207,7 +207,8 @@ def plot_prediction_samples(
 
     images, labels, preds = [], [], []
     with torch.no_grad():
-        for imgs, lbls in data_loader:
+        for batch in data_loader:
+            imgs, lbls, *_ = batch  # toleran terhadap dataloader yang return ekstra nilai
             imgs = imgs.to(device)
             outputs = model(imgs)
             pred = outputs.argmax(dim=1).cpu()
@@ -268,7 +269,8 @@ def plot_error_analysis(
     fp_images, fn_images = [], []
 
     with torch.no_grad():
-        for imgs, lbls in data_loader:
+        for batch in data_loader:
+            imgs, lbls, *_ = batch  # toleran terhadap dataloader yang return ekstra nilai
             imgs_dev = imgs.to(device)
             outputs = model(imgs_dev)
             preds = outputs.argmax(dim=1).cpu().numpy()
@@ -288,8 +290,8 @@ def plot_error_analysis(
     fig, axes = plt.subplots(2, n_cols, figsize=(3.5 * n_cols, 7))
 
     row_titles = [
-        f"False Positives ({n_fp})  - NORMAL predicted as PNEUMONIA",
-        f"False Negatives ({n_fn})  - PNEUMONIA predicted as NORMAL",
+        f"False Positives ({n_fp})  — NORMAL predicted as PNEUMONIA",
+        f"False Negatives ({n_fn})  — PNEUMONIA predicted as NORMAL",
     ]
     sets = [fp_images, fn_images]
     colors = [PALETTE["orange"], PALETTE["red"]]
@@ -309,7 +311,7 @@ def plot_error_analysis(
         axes[row][0].set_ylabel(title, fontsize=9, fontweight="bold",
                                 rotation=90, labelpad=8)
 
-    fig.suptitle("Error Analysis - False Positives & False Negatives", fontsize=13, fontweight="bold")
+    fig.suptitle("Error Analysis — False Positives & False Negatives", fontsize=13, fontweight="bold")
     plt.tight_layout()
     if save_path:
         plt.savefig(save_path, dpi=150, bbox_inches="tight")
