@@ -1,44 +1,175 @@
-# Klasifikasi Pneumonia pada Citra Chest X-Ray menggunakan CNN & Grad-CAM
+# Pneumonia Detection from Chest X-Ray using Convolutional Neural Network (CNN) & Transfer Learning
 
-[![Framework](https://img.shields.io/badge/framework-PyTorch-%23EE4C2C.svg)](https://pytorch.org/)
-[![Status](https://img.shields.io/badge/project--status-in--progress-orange.svg)]()
+Implementasi klasifikasi citra medis Chest X-Ray untuk mendeteksi pneumonia menggunakan pendekatan Deep Learning berbasis **Baseline CNN** dan **Transfer Learning ResNet50** dengan interpretabilitas model menggunakan **Grad-CAM**.
 
-Repositori ini merupakan wadah publikasi dan *showcase* untuk **Tugas Pengganti UAS Mata Kuliah Kecerdasan Buatan (Semester Genap 2025/2026)**.
 
-Proyek ini berfokus pada pengembangan model *Deep Learning* untuk mendeteksi penyakit pneumonia melalui citra rontgen dada (Chest X-Ray), sekaligus mengimplementasikan metode Grad-CAM guna memberikan transparansi visual pada keputusan yang diambil oleh model.
+# 1. Deskripsi Proyek
+
+Pneumonia merupakan penyakit infeksi paru-paru yang memerlukan diagnosis cepat dan akurat. Pada proyek ini dikembangkan sistem klasifikasi citra Chest X-Ray untuk membedakan dua kelas, yaitu:
+- NORMAL
+- PNEUMONIA
+
+Pendekatan yang digunakan meliputi:
+1. Baseline CNN (from scratch)
+2. Transfer Learning menggunakan ResNet50 pretrained ImageNet
+3. Fine-tuning parsial (`unfreeze layer4`)
+4. Evaluasi multi-metrik
+5. Interpretabilitas model menggunakan Grad-CAM
+
+
+# 2. Arsitektur Model
+
+## 1. Baseline CNN
+
+Custom CNN sederhana dengan 3 convolution block:
+
+- Conv2D(16) + ReLU + MaxPool
+- Conv2D(32) + ReLU + MaxPool
+- Conv2D(64) + ReLU + MaxPool
+- Fully Connected Layer
+- Dropout(0.5)
+- Output 2 kelas
+
+Input gambar:
+- `224 × 224 × 3`
+  
+
+## 2. Transfer Learning - ResNet50
+
+Menggunakan model:
+
+- `torchvision.models.resnet50`
+- pretrained ImageNet weights
+
+Strategi training:
+
+### Frozen Backbone
+Seluruh backbone dibekukan dan hanya classifier head yang dilatih.
+
+### Fine-Tuning Layer4
+Dilakukan:
+1. Warm-up classifier head
+2. Unfreeze `layer4`
+3. Fine-tuning dengan learning rate kecil
+
+
+# 3. Dataset
+
+Dataset yang digunakan:
+
+## Chest X-Ray Pneumonia Dataset
+Sumber:
+- Kaggle
+- Guangzhou Women and Children's Medical Center
+
+Dataset terdiri dari:
+- citra NORMAL
+- citra PNEUMONIA
+
+
+# Preprocessing
+
+Tahapan preprocessing:
+- Resize -> `224×224`
+- Convert grayscale -> RGB (3 channel)
+- Normalization (ImageNet mean/std)
+
+Augmentasi data pada training set:
+- Random Horizontal Flip
+- Random Rotation (10°)
+- Brightness adjustment
+- Contrast adjustment
+
+
+# 4. Training
+
+## Baseline CNN
+
+Training menggunakan:
+- Adam Optimizer
+- CrossEntropyLoss
+- Learning rate = `0.001`
+
+## Transfer Learning ResNet50
+
+Menggunakan:
+- FineTuner class
+- ReduceLROnPlateau Scheduler
+- Class Weights untuk mengatasi imbalance dataset
+- Two-phase training
+
+### Experiment 1
+Frozen Backbone
+
+### Experiment 2
+Unfreeze Layer4
 
 ---
 
-## Ringkasan Proyek
+# 5. Evaluasi Model
 
-* **Studi Kasus:** Klasifikasi Biner Citra Medis (NORMAL vs PNEUMONIA).
-* **Dataset:** Chest X-Ray Images (Pneumonia) dari Kaggle - 11.712 citra (3.166 Normal, 8.546 Pneumonia)
-* **Pendekatan AI:**
-  * *Baseline Model:* Custom Convolutional Neural Network (CNN) yang dibangun dari awal (*from scratch*).
-  * *Main Model:* Transfer Learning menggunakan arsitektur *pretrained* ResNet50 untuk optimasi akurasi.
-* **Interpretabilitas:** Grad-CAM (*Gradient-weighted Class Activation Mapping*) untuk menghasilkan visualisasi *heatmap* area infeksi pada paru-paru.
+Evaluasi dilakukan menggunakan:
+- Accuracy
+- Precision
+- Recall
+- F1-Score
+- ROC-AUC
+- Confusion Matrix
+- ROC Curve
 
----
+Visualisasi tambahan:
+- Prediction Samples
+- Error Analysis
+- Training Curves
+- Model Comparison
 
-## Alur Kerja & Metodologi
 
-Secara garis besar, proyek ini dikembangkan melalui beberapa tahapan utama:
+# 6. Grad-CAM
 
-1. **Pra-pemrosesan Data (Preprocessing):** Proses pemisahan data (*data splitting*) secara *stratified*, penyesuaian dimensi citra (resizing), normalisasi nilai piksel, serta penerapan augmentasi gambar untuk memperkaya variasi data latih.
-2. **Pengembangan Model Baseline:** Membangun arsitektur CNN kustom sederhana sebagai titik acuan eksperimen awal.
-3. **Penerapan Transfer Learning:** Melakukan *fine-tuning* pada arsitektur ResNet50 yang telah dilatih sebelumnya pada dataset ImageNet.
-4. **Visualisasi Grad-CAM:** Mengintegrasikan peta aktivasi kelas berbasis gradien untuk menyoroti area spasial yang menjadi fokus utama model saat melakukan klasifikasi.
+Grad-CAM digunakan untuk interpretabilitas model dengan menghasilkan heatmap area citra yang paling berpengaruh terhadap prediksi model.
 
----
+Target layer:
+- `conv3` untuk Baseline CNN
+- `layer4[-1].conv3` untuk ResNet50
 
-## Status & Progres Pengembangan
+Output:
+- heatmap
+- overlay heatmap pada citra asli
+  
 
-Proyek ini sedang berada dalam fase pengembangan aktif dengan ringkasan status per tahapan sebagai berikut:
+# 7. Hasil Akhir
 
-| Tahapan Pekerjaan                     | Deskripsi                                                              |   Status   |
-| :------------------------------------ | :--------------------------------------------------------------------- | :---------: |
-| **Eksplorasi & Preprocessing**  | Analisis distribusi dataset, pembagian data, dan pipeline augmentasi   |   Selesai   |
-| **Model Baseline (Custom CNN)** | Implementasi arsitektur dasar dan eksekusi*training loop* awal       |   Selesai   |
-| **Model Utama (ResNet50)**      | Integrasi arsitektur*Transfer Learning* dan strategi *fine-tuning* | Berlangsung |
-| **Evaluasi Akhir & Metrik**     | Pengujian performa komparatif antar-model pada data uji (*Test Set*) |    Belum    |
-| **Implementasi Grad-CAM**       | Penayangan visualisasi*heatmap* untuk interpretabilitas model        |    Belum    |
+## Baseline CNN
+
+- Accuracy: 95.11%
+- Precision: 95.65%
+- Recall: 97.74%
+- F1-score: 96.68%
+- AUC-ROC: 0.989
+
+## ResNet50 Fine-Tuning (Best Model)
+
+- Accuracy: 98%
+- F1-score: 98%
+
+Hasil menunjukkan bahwa transfer learning dengan fine-tuning layer4 memberikan performa terbaik dibandingkan baseline CNN.
+
+
+# 8. Future Work
+
+Pengembangan lanjutan yang dapat dilakukan:
+- Evaluasi pada dataset out-of-domain (CheXpert, MIMIC-CXR)
+- Multi-class classification
+- Lung segmentation menggunakan U-Net
+- Eksperimen Vision Transformer (ViT)
+
+
+# 9. Teknologi yang Digunakan
+
+- Python
+- PyTorch
+- Torchvision
+- Scikit-learn
+- OpenCV
+- Matplotlib
+- Seaborn

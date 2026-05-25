@@ -3,7 +3,7 @@
   "topik_pilihan": 1,
   "nama_topik": "Convolutional Neural Network (CNN)",
   "judul_proyek": "Klasifikasi Pneumonia pada Citra Chest X-Ray Menggunakan Convolutional Neural Network (CNN) dan Grad-CAM",
-  "abstrak_singkat": "Proyek ini bertujuan membangun model klasifikasi citra medis berbasis Convolutional Neural Network (CNN) untuk mendeteksi pneumonia pada citra Chest X-Ray. Pendekatan yang digunakan meliputi implementasi baseline CNN dari awal (from scratch) dan pengembangan model transfer learning menggunakan ResNet50. Dataset yang digunakan berasal dari Chest X-Ray Pneumonia Dataset publik dari Kaggle. Tahap yang telah selesai meliputi preprocessing data, augmentasi citra, pembagian dataset secara stratified, implementasi baseline CNN, serta training awal selama 3 epoch dengan validation accuracy terbaik sebesar 94.59%. Pengembangan tahap selanjutnya akan difokuskan pada transfer learning, fine-tuning, evaluasi lanjutan, dan interpretabilitas model menggunakan Grad-CAM.",
+  "abstrak_singkat": "Proyek ini bertujuan membangun sistem klasifikasi citra medis berbasis Convolutional Neural Network (CNN) untuk mendeteksi pneumonia pada citra Chest X-Ray. Pendekatan yang digunakan meliputi implementasi Baseline CNN dari awal (from scratch) dan Transfer Learning menggunakan ResNet50 pretrained ImageNet dengan strategi fine-tuning parsial. Dataset yang digunakan berasal dari Chest X-Ray Pneumonia Dataset publik dari Kaggle. Tahapan eksperimen mencakup preprocessing citra, augmentasi data, training model, evaluasi performa menggunakan metrik klasifikasi, serta interpretabilitas model menggunakan Grad-CAM. Hasil eksperimen menunjukkan bahwa pendekatan ResNet50 dengan Unfreeze Layer4 menghasilkan performa terbaik dengan accuracy test sebesar 98%, melampaui Baseline CNN sebesar 95.11% dan ResNet50 Frozen Backbone sebesar 90.67%.",
 
   "metode_ai": [
     {
@@ -15,8 +15,14 @@
     {
       "nama": "ResNet50",
       "peran": "utama",
-      "varian": "Transfer learning dan fine-tuning pretrained ImageNet",
-      "catatan": "Masih dalam tahap perancangan dan belum diintegrasikan pada eksperimen saat ini."
+      "varian": "Transfer learning pretrained ImageNet dengan strategi frozen backbone dan partial fine-tuning layer4",
+      "catatan": "Model dengan performa terbaik menggunakan strategi Unfreeze Layer4."
+    },
+    {
+      "nama": "Grad-CAM",
+      "peran": "pembanding",
+      "varian": "Gradient-weighted Class Activation Mapping untuk interpretabilitas visual",
+      "catatan": "Digunakan untuk memvisualisasikan area perhatian model pada citra X-Ray."
     }
   ],
 
@@ -24,22 +30,22 @@
     {
       "nama": "PyTorch",
       "versi": "2.10.0+cpu",
-      "kegunaan": "Implementasi model CNN, training loop, dan optimisasi model"
+      "kegunaan": "Implementasi model CNN, transfer learning, dan training loop"
     },
     {
       "nama": "Torchvision",
       "versi": "0.25.0+cpu",
-      "kegunaan": "Transformasi citra dan utility computer vision"
+      "kegunaan": "Transformasi citra dan loading pretrained ResNet50"
     },
     {
       "nama": "Matplotlib",
       "versi": "3.10.0",
-      "kegunaan": "Visualisasi distribusi data dan sampel citra"
+      "kegunaan": "Visualisasi training history, ROC curve, confusion matrix, dan Grad-CAM"
     },
     {
       "nama": "Scikit-learn",
       "versi": "1.6.1",
-      "kegunaan": "Stratified train-validation-test split"
+      "kegunaan": "Classification report, confusion matrix, ROC-AUC, dan dataset splitting"
     },
     {
       "nama": "Pandas",
@@ -49,7 +55,7 @@
     {
       "nama": "Seaborn",
       "versi": "0.13.2",
-      "kegunaan": "Visualisasi distribusi kelas dataset"
+      "kegunaan": "Visualisasi confusion matrix"
     }
   ],
 
@@ -57,9 +63,9 @@
     {
       "nama": "Chest X-Ray Images (Pneumonia)",
       "tipe": "publik",
-      "sumber": "Kaggle",
+      "sumber": "Kaggle - Paul Mooney",
       "url_sumber_publik": "https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia",
-      "jumlah_sampel": 11712,
+      "jumlah_sampel": 5856,
       "jumlah_kelas": 2,
       "proses_akuisisi_mandiri": "",
       "peran_di_proyek": "Dataset utama untuk klasifikasi citra Chest X-Ray NORMAL dan PNEUMONIA.",
@@ -80,15 +86,16 @@
 
   "metrik_utama": [
     "Accuracy",
-    "Cross-Entropy Loss",
-    "Confusion Matrix",
     "Precision",
     "Recall",
-    "F1-Score"
+    "F1-Score",
+    "ROC-AUC",
+    "Confusion Matrix"
   ],
 
   "klaim_bonus": [
-    "B1"
+    "B1",
+    "B3"
   ],
 
   "anggota": [
@@ -105,20 +112,31 @@
       ],
       "konsep_dikuasai_implementasi": [
         "PyTorch Dataset & DataLoader",
-        "Image normalization",
-        "Image augmentation",
-        "Stratified train-validation-test split"
+        "Image normalization menggunakan ImageNet statistics",
+        "RandomHorizontalFlip dan RandomRotation",
+        "ColorJitter augmentation",
+        "Stratified train-validation-test split",
+        "Tensor conversion dan preprocessing pipeline"
       ],
       "konsep_dikuasai_teori": [
-        "Class imbalance",
-        "Data augmentation",
-        "Image preprocessing",
-        "Dataset splitting"
+        "Class imbalance pada medical imaging",
+        "Data augmentation sebagai regularisasi",
+        "Image preprocessing pada CNN",
+        "Perbedaan training, validation, dan test set",
+        "Distribusi data dan generalisasi model"
+      ],
+      "bagian_laporan": [
+        "Abstract",
+        "Bab I.1",
+        "Bab I.2",
+        "Bab I.3",
+        "Bab III.6",
+        "Bab IV.1"
       ],
       "bagian_kode": [
-        "preprocessing/preprocessing.py",
+        "preprocessing/dataloader.py",
         "preprocessing/dataset.py",
-        "preprocessing/dataloader.py"
+        "preprocessing/preprocessing.py"
       ]
     },
     {
@@ -132,19 +150,30 @@
         "Checkpointing"
       ],
       "konsep_dikuasai_implementasi": [
-        "Conv2D",
+        "Conv2D layer",
         "ReLU activation",
         "MaxPooling",
-        "Dropout",
+        "Dropout regularization",
         "CrossEntropyLoss",
         "Adam optimizer",
-        "Backpropagation"
+        "Forward propagation dan backpropagation",
+        "Model checkpoint saving"
       ],
       "konsep_dikuasai_teori": [
-        "Forward propagation",
+        "CNN feature extraction",
         "Gradient descent",
-        "Overfitting",
-        "CNN feature extraction"
+        "Overfitting dan regularisasi",
+        "Loss function pada klasifikasi",
+        "Feature map dan convolution operation",
+        "Peran activation function pada deep learning"
+      ],
+      "bagian_laporan": [
+        "Bab II.2 (Arsitektur Baseline CNN)",
+        "Bab III.2",
+        "Bab III.3",
+        "Bab III.4",
+        "Bab V.1",
+        "Bab V.3"
       ],
       "bagian_kode": [
         "models/baseline_model.py",
@@ -159,24 +188,38 @@
         "Transfer learning",
         "Fine-tuning",
         "Experiment configuration",
-        "Hyperparameter tuning"
+        "Hyperparameter analysis"
       ],
       "konsep_dikuasai_implementasi": [
-        "Pretrained CNN",
-        "Layer freezing",
-        "Fine-tuning strategy",
-        "Learning rate tuning"
+        "Pretrained ResNet50",
+        "Layer freezing dan unfreezing",
+        "Partial fine-tuning layer4",
+        "Custom classifier head",
+        "ReduceLROnPlateau scheduler",
+        "Weighted CrossEntropyLoss",
+        "Learning rate configuration"
       ],
       "konsep_dikuasai_teori": [
         "Transfer learning",
-        "Residual learning",
-        "Feature extraction",
-        "Bias-variance tradeoff"
+        "Residual learning pada ResNet",
+        "Vanishing gradient",
+        "Feature extraction vs fine-tuning",
+        "Bias-variance tradeoff",
+        "Residual block dan skip connection",
+        "Generalization pada deep learning"
+      ],
+      "bagian_laporan": [
+        "Bab I.4",
+        "Bab II.2 (Transfer Learning)",
+        "Bab II.4",
+        "Bab II.5",
+        "Bab III.5",
+        "Bab IV.3"
       ],
       "bagian_kode": [
         "models/transfer_learning.py",
-        "training/finetune.py",
-        "training/experiment.py"
+        "models/finetune.py",
+        "training/train_resnet50.py"
       ]
     },
     {
@@ -191,22 +234,35 @@
       ],
       "konsep_dikuasai_implementasi": [
         "Confusion matrix",
-        "Precision & Recall",
-        "F1-score",
-        "Grad-CAM heatmap",
-        "Prediction visualization"
+        "Precision, Recall, dan F1-score",
+        "ROC Curve dan ROC-AUC",
+        "Grad-CAM hook implementation",
+        "Heatmap visualization",
+        "Classification report sklearn",
+        "False positive dan false negative analysis"
       ],
       "konsep_dikuasai_teori": [
         "Model interpretability",
-        "Classification metrics",
-        "False positive & false negative analysis",
-        "Visual explanation pada CNN"
+        "Explainable AI (XAI)",
+        "Classification metrics pada imbalanced dataset",
+        "Spurious feature",
+        "Grad-CAM mechanism",
+        "Error analysis pada CNN",
+        "Perbedaan precision dan recall dalam domain medis"
+      ],
+      "bagian_laporan": [
+        "Bab II.1",
+        "Bab II.3",
+        "Bab III.1",
+        "Bab III.2",
+        "Bab III.7",
+        "Bab IV.2"
       ],
       "bagian_kode": [
-        "evaluation/metrics.py",
         "evaluation/evaluation.py",
         "evaluation/gradcam.py",
-        "visualization/visualization.py"
+        "evaluation/metrics.py",
+        "evaluation/visualization.py"
       ]
     }
   ],
@@ -215,22 +271,28 @@
     "github": "https://github.com/reimoyisuki/pneumonia-xray-cnn-gradcam",
     "colab": "https://colab.research.google.com/drive/1j_8bEz6FORUJlHewGgexl5Ls-4qQcR0n?usp=sharing",
     "dataset_mandiri": null,
-    "video_demo": null
+    "video_demo": "https://drive.google.com/file/d/1bq-rvvwTHMYBsvmKWY-1vNvzCXotMmCE/view"
   },
 
   "ai_assistant_usage": {
     "digunakan": true,
     "tools": [
-      "ChatGPT",
-      "Deepseek"
+      "ChatGPT 5.5",
+      "Gemini 1.5 Pro",
+      "Gemini 3.1 Pro",
+      "Gemini 3.5 Flash",
+      "DeepSeek-V3"
     ],
     "bagian": [
-      "Perbaikan struktur kode",
-      "Debugging import dan environment Colab",
-      "Review penulisan akademik",
-      "Penyusunan metadata proyek",
-      "Penyusunan laporan progress report"
+      "Debugging preprocessing dan DataLoader",
+      "Perbaikan struktur kode modular PyTorch",
+      "Debugging environment Google Colab",
+      "Analisis hasil evaluasi model",
+      "Penyusunan flowchart dan block diagram",
+      "Review penulisan akademik laporan",
+      "Refinement penjelasan CNN, transfer learning, dan Grad-CAM",
+      "Penyusunan metadata proyek"
     ],
-    "estimasi_persentase": 20
+    "estimasi_persentase": 60
   }
 }
